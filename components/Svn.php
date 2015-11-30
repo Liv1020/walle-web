@@ -45,7 +45,9 @@ class Svn extends Command {
         foreach ($copy as $file) {
             $fileAndVersion[] = StringHelper::explode($file, " ", true, true);
         }
-        $branch = $task->branch == 'trunk' ? $task->branch
+        // 兼容无trunk、无branches、无tags下为空
+        $branch = ($task->branch == 'trunk' || $task->branch == '')
+            ? $task->branch
             : ($this->getConfig()->repo_mode == Project::REPO_BRANCH ? 'branches/' : 'tags/') . $task->branch;
         // 先更新
         $versionSvnDir = sprintf('%s-svn', rtrim(Project::getDeployWorkspace($task->link_id), '/'));
@@ -75,26 +77,35 @@ class Svn extends Command {
      * @return array
      */
     public function getBranchList() {
-        $list = [];
-        $branchDir = 'tags';
-        if ($this->getConfig()->repo_mode == Project::REPO_BRANCH) {
-            $list[] = [
-                'id' => 'trunk',
-                'message' => 'trunk',
-            ];
-            $branchDir = 'branches';
-        }
-        $svnType = sprintf("%s/%s", rtrim(Project::getDeployFromDir(), '/'), $branchDir);
-
         // 更新
         $this->updateRepo();
+        $list = [];
+        $branchDir = 'tags';
+        // 分支模式
+        if ($this->getConfig()->repo_mode == Project::REPO_BRANCH) {
+            $branchDir = 'branches';
+            $trunkDir  = sprintf("%s/trunk", rtrim(Project::getDeployFromDir(), '/'));
+
+            if (file_exists($trunkDir)) {
+                $list[] = [
+                    'id' => 'trunk',
+                    'message' => 'trunk',
+                ];
+            } else {
+                $list[] = [
+                    'id' => '',
+                    'message' => \yii::t('w', 'default trunk'),
+                ];
+            }
+        }
+        $branchDir = sprintf("%s/%s", rtrim(Project::getDeployFromDir(), '/'), $branchDir);
 
         // 如果不存在branches目录，则跳过查找其它分支
-        if (!file_exists($svnType)) {
+        if (!file_exists($branchDir)) {
             return $list;
         }
 
-        $branches = new \DirectoryIterator($svnType);
+        $branches = new \DirectoryIterator($branchDir);
         foreach ($branches as $branch) {
             $name = $branch->__toString();
             if ($branch->isDot() || $branch->isFile()) continue;
@@ -113,7 +124,7 @@ class Svn extends Command {
      *
      * @return array
      */
-    public function getCommitList($branch = 'master', $count = 30) {
+    public function getCommitList($branch = 'trunk', $count = 30) {
         // 先更新
         $destination = Project::getDeployFromDir();
         $this->updateRepo($branch, $destination);
@@ -122,7 +133,7 @@ class Svn extends Command {
         $command = join(' && ', $cmd);
         $result = $this->runLocalCommand($command);
         if (!$result) {
-            throw new \Exception('获取提交历史失败：' . $this->getExeLog());
+            throw new \Exception(\yii::t('walle', 'get commit log failed') . $this->getExeLog());
         }
 
         // 总有一些同学没有团队协作意识，不设置好编码：(
@@ -173,7 +184,7 @@ class Svn extends Command {
         $command = join(' && ', $cmd);
         $result = $this->runLocalCommand($command);
         if (!$result) {
-            throw new \Exception('获取提交历史失败：' . $this->getExeLog());
+            throw new \Exception(\yii::t('walle', 'get commit log failed') . $this->getExeLog());
         }
 
         $list = [];
@@ -219,14 +230,15 @@ class Svn extends Command {
 
     public static function getBranchDir($branch, $tag = false) {
         $svnDir = Project::getDeployFromDir();
-        $branchDir = $branch == 'trunk' && !$tag
+        // 兼容无trunk、无branches、无tags下为空
+        $branchDir = ($branch == '' || $branch == 'trunk') && !$tag
             ? $branch
             : ($tag ? 'tags/'.$branch : 'branches/'.$branch);
         return sprintf('%s/%s', $svnDir, $branchDir);
     }
 
     private function _getSvnCmd($cmd) {
-        return sprintf("/usr/bin/env %s  --username %s --password %s --non-interactive --trust-server-cert ",
+        return sprintf("/usr/bin/env %s  --username='%s' --password='%s' --non-interactive --trust-server-cert ",
             $cmd, $this->config->repo_username, $this->config->repo_password);
     }
 

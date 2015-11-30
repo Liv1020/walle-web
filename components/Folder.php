@@ -30,7 +30,7 @@ class Folder extends Command {
     /**
      * 目标机器的版本库初始化
      * 这里会有点特殊化：
-     * 1.git只需要生成版本目录即可
+     * 1.（git只需要生成版本目录即可）new：好吧，现在跟2一样了，毕竟本地的copy要比rsync要快，到时只需要rsync做增量更新即可
      * 2.svn还需要把线上版本复制到1生成的版本目录中，做增量发布
      *
      * @author wushuiyong
@@ -39,10 +39,8 @@ class Folder extends Command {
      */
     public function initRemoteVersion($version) {
         $cmd[] = sprintf('mkdir -p %s', Project::getReleaseVersionDir($version));
-        if ($this->config->repo_type == Project::REPO_SVN) {
-            $cmd[] = sprintf('test -d %s && cp -rf %s/* %s/ || echo 1', // 无论如何总得要$?执行成功
-                $this->config->release_to, $this->config->release_to, Project::getReleaseVersionDir($version));
-        }
+        $cmd[] = sprintf('test -d %s && cp -rf %s/* %s/ || echo 1', // 无论如何总得要$?执行成功
+            $this->config->release_to, $this->config->release_to, Project::getReleaseVersionDir($version));
         $command = join(' && ', $cmd);
 
         return $this->runRemoteCommand($command);

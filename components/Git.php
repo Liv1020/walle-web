@@ -47,8 +47,7 @@ class Git extends Command {
         $destination = Project::getDeployWorkspace($task->link_id);
         $this->updateRepo($task->branch, $destination);
         $cmd[] = sprintf('cd %s ', $destination);
-        $cmd[] = sprintf('/usr/bin/env git reset -q %s', $task->commit_id);
-        $cmd[] = '/usr/bin/env git checkout -q .';
+        $cmd[] = sprintf('/usr/bin/env git reset -q --hard %s', $task->commit_id);
         $command = join(' && ', $cmd);
 
         return $this->runLocalCommand($command);
@@ -69,7 +68,7 @@ class Git extends Command {
         $command = join(' && ', $cmd);
         $result = $this->runLocalCommand($command);
         if (!$result) {
-            throw new \Exception('获取分支列表失败：' . $this->getExeLog());
+            throw new \Exception(\yii::t('walle', 'get branches failed') . $this->getExeLog());
         }
 
         $history = [];
@@ -107,7 +106,7 @@ class Git extends Command {
         $command = join(' && ', $cmd);
         $result = $this->runLocalCommand($command);
         if (!$result) {
-            throw new \Exception('获取提交历史失败：' . $this->getExeLog());
+            throw new \Exception(\yii::t('walle', 'get commit log failed') . $this->getExeLog());
         }
 
         $history = [];
@@ -138,7 +137,7 @@ class Git extends Command {
         $command = join(' && ', $cmd);
         $result = $this->runLocalCommand($command);
         if (!$result) {
-            throw new \Exception('获取tag记录失败：' . $this->getExeLog());
+            throw new \Exception(\yii::t('walle', 'get tags failed') . $this->getExeLog());
         }
 
         $history = [];

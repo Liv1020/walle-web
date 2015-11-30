@@ -9,9 +9,6 @@ $config = [
     'components' => [
         'db' => [
             'class'     => 'yii\db\Connection',
-            'dsn'       => 'mysql:host=127.0.0.1;dbname=walle',
-            'username'  => 'root',
-            'password'  => '',
             'charset'   => 'utf8',
         ],
         'session' => [
@@ -27,11 +24,6 @@ $config = [
             'useFileTransport' => false,
             'transport' => [
                 'class'      => 'Swift_SmtpTransport',
-                'host'       => 'smtp.exmail.qq.com',     # smtp 发件地址
-                'username'   => 'service@huamanshu.com',  # smtp 发件用户名
-                'password'   => 'K84erUuxg1bHqrfD',       # smtp 发件人的密码
-                'port'       => 25,                       # smtp 端口
-                'encryption' => 'tls',                    # smtp 协议
             ],
             'messageConfig' => [
                 'charset' => 'UTF-8',
@@ -66,13 +58,10 @@ $config = [
                 '<controller:\w+>/<action:\w+>' => '<controller>/<action>',
             ],
         ],
-        'request' => [
-            'cookieValidationKey' => 'PdXWDAfV5-gPJJWRar5sEN71DN0JcDRV',
-        ],
     ],
-    'language'   => 'zh-CN',
     'bootstrap'  => [
         'app\components\EventBootstrap',
+        'log',
     ],
     'params'     => require(__DIR__ . '/params.php'),
 ];

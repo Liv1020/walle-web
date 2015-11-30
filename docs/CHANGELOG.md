@@ -1,5 +1,30 @@
 ## Change Log
 
+### v0.9.5 (2015/11/26 15:19 +00:00)
+- 简化svn无trunk/branches提交上线单流程（去掉选择分支）
+- cookie 记住上次选择的分支，优化提交上线流程
+- 优化未激活时也可以重置密码
+- 登录界面的用户名标签改为邮箱
+- 把需要更改的参数移到local.php (@Richard87)
+- moved language to local to keep language changes to a single file all these changes in a single (@Richard87)
+- added /config/local.php to gitignore (@Richard87)
+- move all credentials to local.php for easier modification and development (@Richard87)
+- 修正js标签导致部分浏览器modal浮窗打开失败问题
+- 优化git模式下的rsync
+- git mode the same with svn mode, rsync the diff
+- login translations (@Richard87)
+- add doc of walle
+
+### v0.9.2 (2015/11/19 14:59 +00:00)
+- 兼容 svn 无 trunk/tags/branches
+- 修正目标机pre-release、post-release任务中{WORKSPACE}变量
+
+### v0.9.0 (2015/11/18 10:07 +00:00)
+- reset && checkout => reset --hard
+- walle的国际化版本
+- 修正支持svn密码特殊字符
+- 项目配置：修复了sql_mode在严格模式下提示key_version_num not null (@Liv1020)
+
 ### v0.8.5 (2015/11/07 13:06 +00:00)
 - 优化项目初始化方式
 - 添加最大版本保留数前端验证提示

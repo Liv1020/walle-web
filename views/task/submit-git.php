@@ -2,7 +2,7 @@
 /**
  * @var yii\web\View $this
  */
-$this->title = '提交上线单';
+$this->title = yii::t('task', 'submit task title');
 use yii\widgets\ActiveForm;
 use app\models\Project;
 
@@ -10,14 +10,14 @@ use app\models\Project;
 <div class="box">
     <?php $form = ActiveForm::begin(['id' => 'login-form']); ?>
       <div class="box-body">
-        <?= $form->field($task, 'title')->label('任务标题', ['class' => 'control-label bolder blue']) ?>
+        <?= $form->field($task, 'title')->label(yii::t('task', 'submit title'), ['class' => 'control-label bolder blue']) ?>
 
         <!-- 分支选取 -->
         <?php if ($conf->repo_mode == Project::REPO_BRANCH) { ?>
           <div class="form-group">
-              <label>选取分支
+              <label><?= yii::t('task', 'select branches') ?>
                   <a class="show-tip icon-refresh green" href="javascript:;"></a>
-                  <span class="tip">查看所有分支</span>
+                  <span class="tip"><?= yii::t('task', 'all branches') ?></span>
                   <i class="get-branch icon-spinner icon-spin orange bigger-125" style="display: none"></i>
               </label>
               <select name="Task[branch]" aria-hidden="true" tabindex="-1" id="branch" class="form-control select2 select2-hidden-accessible">
@@ -27,12 +27,12 @@ use app\models\Project;
         <?php } ?>
         <!-- 分支选取 end -->
         <?= $form->field($task, 'commit_id')->dropDownList([])
-          ->label('版本选取<i class="get-history icon-spinner icon-spin orange bigger-125"></i>', ['class' => 'control-label bolder blue']) ?>
+          ->label(yii::t('task', 'select branch').'<i class="get-history icon-spinner icon-spin orange bigger-125"></i>', ['class' => 'control-label bolder blue']) ?>
 
       </div><!-- /.box-body -->
 
       <div class="box-footer">
-        <input type="submit" class="btn btn-primary" value="提交">
+        <input type="submit" class="btn btn-primary" value="<?= yii::t('w', 'submit') ?>">
       </div>
 
     <!-- 错误提示-->
@@ -45,7 +45,7 @@ use app\models\Project;
                         &times;
                     </button>
                     <h4 class="modal-title" id="myModalLabel">
-                        发生了错误
+                        <?= yii::t('w', 'modal error title') ?>
                     </h4>
                 </div>
                 <div class="modal-body"></div>
@@ -60,6 +60,15 @@ use app\models\Project;
 
 <script type="text/javascript">
     jQuery(function($) {
+        // 用户上次选择的分支作为转为分支
+        var project_id = <?= (int)$_GET['projectId'] ?>;
+        var branch_name= 'pre_branch_' + project_id;
+        var pre_branch = ace.cookie.get(branch_name);
+        if (pre_branch) {
+            var option = '<option value="' + pre_branch + '" selected>' + pre_branch + '</option>';
+            $('#branch').html(option)
+        }
+
         function getBranchList() {
             $('.get-branch').show();
             $('.tip').hide();
@@ -82,6 +91,7 @@ use app\models\Project;
         }
 
         function getCommitList() {
+            $('.get-history').show();
             $.get("/walle/get-commit-history?projectId=" + <?= (int)$_GET['projectId'] ?> +"&branch=" + $('#branch').val(), function (data) {
                 // 获取commit log失败
                 if (data.code) {
@@ -98,7 +108,8 @@ use app\models\Project;
         }
 
         $('#branch').change(function() {
-            $('.get-history').show();
+            // 添加cookie记住最近使用的分支名字
+            ace.cookie.set(branch_name, $(this).val(), 86400*30)
             getCommitList();
         })
 
@@ -132,6 +143,7 @@ use app\models\Project;
         $("#myModal").on("hidden.bs.modal", function () {
             $(this).removeData("bs.modal");
         });
+
     })
 
 </script>
